@@ -124,7 +124,8 @@ def loop():
     for word in wordlist:
         try:
             if user == '':
-                res = login(fail=wrongmsg,success=successmsg,username=word,password=word)
+                for words in wordlist:
+                    res = login(fail=wrongmsg,success=successmsg,username=word,password=words)
             else:
                 res = login(fail=wrongmsg,success=successmsg,username=user,password=word)
             if res == False:
